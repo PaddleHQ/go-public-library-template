@@ -25,10 +25,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
-        with:
-          go-version-file: go.mod
-          cache-dependency-path: go.mod
+        uses: ./.github/actions/setup-go
 
       - name: Build
         run: go build ./...
@@ -53,5 +50,19 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      # Advisory, as in go-library-template: a newly published vulnerability shouldn't fail PRs that didn't introduce it.
       - name: Check for known vulnerabilities
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+        shell: bash {0}
+        run: |
+          result=$(go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./... 2>&1)
+          status=$?
+          echo "$result"
+          if [ "$status" -ne 0 ]; then
+            echo "::warning title=Known vulnerabilities::govulncheck reported findings, see the job summary"
+            {
+              echo '## govulncheck'
+              echo '```'
+              echo "$result"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
