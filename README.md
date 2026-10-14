@@ -2,9 +2,9 @@
 
 A template for building new public Go libraries.
 
-Public repositories can't use Paddle's custom runner groups or org secrets, so the workflows here run on GitHub-hosted
-runners and need no secrets. This repository is public and runs the same workflows on its own pull requests, so a change
-that would break them in a public library breaks here first.
+The workflows here run on GitHub-hosted runners and need no secrets, so they work in any public repository. This
+repository is public and runs the same workflows on its own pull requests, so a change that would break them in a public
+library breaks here first.
 
 ## Checks
 

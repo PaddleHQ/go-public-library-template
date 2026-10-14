@@ -55,7 +55,7 @@ jobs:
       - name: Vet
         run: go vet ./...
 
-      # Advisory, as in go-library-template: a newly published vulnerability shouldn't fail PRs that didn't introduce it.
+      # Advisory: a newly published vulnerability shouldn't fail PRs that didn't introduce it.
       - name: Check for known vulnerabilities
         shell: bash {0}
         run: |

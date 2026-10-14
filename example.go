@@ -1,4 +1,4 @@
-// Package publiclibrarytemplate is a starting point for new public Go libraries at Paddle.
+// Package publiclibrarytemplate is a starting point for new public Go libraries.
 package publiclibrarytemplate
 
 // Add returns the sum of two numbers.
