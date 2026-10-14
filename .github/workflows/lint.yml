@@ -1,0 +1,45 @@
+# DO NOT EDIT: This file should only be modified in the `go-public-library-template` repo.
+
+name: Ensure code passes linting rules
+
+on:
+  merge_group:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Ensure code passes linting rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the merge base is needed to lint only new issues
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.mod
+
+      - name: Resolve merge base
+        id: base
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref || github.event.merge_group.base_ref }}
+        run: echo "sha=$(git merge-base "origin/${BASE_REF#refs/heads/}" HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Only issues introduced since the merge base fail the check, so existing code doesn't block unrelated PRs.
+      - name: golangci-lint
+        uses: step-security/golangci-lint-action@2697867e9c204558ca23d0decdd0039dc21f2b93 # v9.3.0
+        with:
+          version: v2.11.0
+          args: --new-from-rev=${{ steps.base.outputs.sha }}

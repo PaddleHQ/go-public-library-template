@@ -1,2 +1,31 @@
 # go-public-library-template
-A template for building new public go libraries.
+
+A template for building new public Go libraries.
+
+Public repositories can't use Paddle's custom runner groups or org secrets, so the workflows here run on GitHub-hosted
+runners and need no secrets. This repository is public and runs the same workflows on its own pull requests, so a change
+that would break them in a public library breaks here first.
+
+## Checks
+
+Each workflow provides one of the status checks the organisation requires on pull requests:
+
+| Check | What it does |
+|---|---|
+| Ensure SemVer Label is added | Requires exactly one of `norelease`, `release:patch`, `release:minor`, `release:major` |
+| Ensure code passes linting rules | Runs `golangci-lint` |
+| Run code validation checks | Builds, verifies and tidies modules, checks `gofmt`, runs `go vet` and `govulncheck` |
+| Run tests with coverage and race detector | Runs `go test -race` with coverage |
+| Run tests and validate coverage | Fails if total coverage is below `requiredCoverage` in `build-config.yaml` |
+
+On merge to `main`, the release label decides the next version, and a GitHub release is created for it.
+
+## Configuration
+
+`build-config.yaml` sets the minimum test coverage:
+
+```yaml
+requiredCoverage: 80
+```
+
+The Go version comes from `go.mod`.
