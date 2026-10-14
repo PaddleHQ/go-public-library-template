@@ -15,10 +15,14 @@ Each workflow provides one of the status checks the organisation requires on pul
 | Ensure SemVer Label is added | Requires exactly one of `norelease`, `release:patch`, `release:minor`, `release:major` |
 | Ensure code passes linting rules | Runs `golangci-lint` |
 | Run code validation checks | Builds, verifies and tidies modules, checks `gofmt`, runs `go vet` and `govulncheck` |
-| Run tests with coverage and race detector | Runs `go test -race` with coverage |
-| Run tests and validate coverage | Fails if total coverage is below `requiredCoverage` in `build-config.yaml` |
+| Run tests with coverage and race detector | Runs `go test -race`, counting coverage across all packages and leaving out generated files |
+| Run tests and validate coverage | Fails if total coverage is below `requiredCoverage` in `build-config.yaml` (100 if unset) |
 
 On merge to `main`, the release label decides the next version, and a GitHub release is created for it.
+
+Every job starts with `step-security/harden-runner` in audit mode, which records the job's network egress and needs no secrets.
+
+Generated files are recognised by Go's standard `// Code generated ... DO NOT EDIT.` header.
 
 ## Configuration
 

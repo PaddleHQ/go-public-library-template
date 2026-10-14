@@ -21,6 +21,11 @@ jobs:
     outputs:
       coverage: ${{ steps.coverage.outputs.total }}
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -29,8 +34,20 @@ jobs:
       - name: Set up Go
         uses: ./.github/actions/setup-go
 
+      # -coverpkg credits code exercised by any package's tests, not only its own.
       - name: Run tests
-        run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+        run: go test -race -covermode=atomic -coverpkg=./... -coverprofile=coverage.out ./...
+
+      - name: Remove generated files from coverage
+        run: |
+          module=$(go list -m)
+          generated=$(grep -rlE --include='*.go' '^// Code generated .* DO NOT EDIT\.$' . | sed "s|^\./|${module}/|; s|$|:|" || true)
+          if [ -n "$generated" ]; then
+            echo "Excluding generated files:"
+            echo "$generated"
+            grep -v -F -f <(echo "$generated") coverage.out > coverage.filtered.out
+            mv coverage.filtered.out coverage.out
+          fi
 
       - name: Get total coverage
         id: coverage
@@ -45,6 +62,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
       - name: Checkout build config
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -56,9 +78,10 @@ jobs:
         env:
           TOTAL: ${{ needs.test.outputs.coverage }}
         run: |
-          required=0
+          # Fail closed: without a configured threshold, require full coverage.
+          required=100
           if [ -f build-config.yaml ]; then
-            required=$(yq '.requiredCoverage // 0' build-config.yaml)
+            required=$(yq '.requiredCoverage // 100' build-config.yaml)
           fi
           echo "Total coverage: ${TOTAL}%, required: ${required}%"
           if ! awk -v total="$TOTAL" -v required="$required" 'BEGIN { exit !(total + 0 >= required + 0) }'; then
