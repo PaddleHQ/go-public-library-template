@@ -20,7 +20,7 @@ Each workflow provides one of the status checks the organisation requires on pul
 
 On merge to `main`, the release label decides the next version, and a GitHub release is created for it.
 
-Every job starts with `step-security/harden-runner` in audit mode, which records the job's network egress and needs no secrets.
+Every job starts with `step-security/harden-runner` in block mode, which allows network egress only to the hosts listed under `allowed-endpoints` for that job and needs no secrets. When a job fails because a host was blocked, the job log names it: add it to that job's list, keeping the list sorted.
 
 Generated files are recognised by Go's standard `// Code generated ... DO NOT EDIT.` header.
 
