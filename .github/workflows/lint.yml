@@ -53,3 +53,5 @@ jobs:
         with:
           version: v2.11.0
           args: --new-from-rev=${{ steps.base.outputs.sha }}
+          # Verifying the config downloads its JSON schema, which the egress allowlist blocks.
+          verify: false
