@@ -1,0 +1,2 @@
+## Minimum total test coverage, in percent, enforced by the "Run tests and validate coverage" check.
+requiredCoverage: 100
