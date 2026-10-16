@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - master
   # labeled/unlabeled re-run the dry run against the PR's final label set.
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
